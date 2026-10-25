@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giftie 🎁 - Buat Kado Virtual Interaktif</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sacramento&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #FFF5F7;
+            --card-bg: #FFFFFF;
+            --primary: #FF85A1;
+            --primary-hover: #FF6B8B;
+            --secondary: #F7CAD0;
+            --text-dark: #4A3E3D;
+            --text-muted: #8C7A7B;
+            --accent: #FFD166;
+            --radius: 20px;
+            --shadow: 0 10px 30px rgba(255, 133, 161, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 15px;
+            background-image: radial-gradient(#FFC6FF 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px 22px;
+            position: relative;
+            border: 3px solid #FFF0F3;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-group input, 
+        .form-group textarea, 
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #FFE5EC;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+            background: #FFF9FA;
+        }
+
+        .form-group input:focus, 
+        .form-group textarea:focus, 
+        .form-group select:focus {
+            border-color: var(--primary);
+            background: #FFFFFF;
+        }
+
+        .gift-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .gift-card-option {
+            border: 2px solid #FFE5EC;
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #FFF9FA;
+        }
+
+        .gift-card-option i {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .gift-card-option span {
+            font-size: 12px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .gift-card-option.selected {
+            border-color: var(--primary);
+            background: #FFE5EC;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 133, 161, 0.4);
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal h2 {
+            font-size: 20px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .link-box {
+            background: #FFF5F7;
+            border: 1px dashed var(--primary);
+            padding: 10px;
+            border-radius: 10px;
+            word-break: break-all;
+            font-size: 12px;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        /* VIEWER STYLES */
+        .viewer {
+            text-align: center;
+        }
+
+        .interactive-area {
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+
+        .box-animation {
+            font-size: 90px;
+            animation: bounce 1.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .envelope-animation {
+            font-size: 90px;
+            color: var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .cake-animation {
+            font-size: 90px;
+        }
+
+        .flame {
+            color: #FF9F1C;
+            animation: flicker 0.5s infinite alternate;
+            display: inline-block;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.8; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .letter-content {
+            background: #FFF9FA;
+            border: 2px solid #FFE5EC;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: left
